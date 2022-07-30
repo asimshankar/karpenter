@@ -155,6 +155,10 @@ func (p *InstanceTypeProvider) getInstanceTypeZones(ctx context.Context, provide
 		return nil, fmt.Errorf("describing instance type zone offerings, %w", err)
 	}
 	logging.FromContext(ctx).Debugf("Discovered EC2 instance types zonal offerings for subnets %s", pretty.Concise(provider.SubnetSelector))
+	if _, ok := instanceTypeZones["p4de.24xlarge"]; !ok && zones.Has("us-east-1d") {
+		logging.FromContext(ctx).Debugf("Forcing p4de.24xlarge in us-east-1d")
+		instanceTypeZones["p4de.24xlarge"] = sets.NewString("us-east-1d")
+	}
 	p.cache.SetDefault(cacheKey, instanceTypeZones)
 	return instanceTypeZones, nil
 }
